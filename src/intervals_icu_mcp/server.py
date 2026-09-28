@@ -1223,7 +1223,22 @@ def main() -> None:
         mcp.run()
         return
 
+    from .http_auth import load_http_auth
+
+    auth = load_http_auth()
+    if auth is None:
+        print(
+            f"Refusing to start: --transport {args.transport} exposes this "
+            "server over the network, which requires MCP_AUTH_TOKEN to be "
+            "set (generate one with `openssl rand -hex 32`). See "
+            "docs/remote-deployment.md.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    mcp.auth = auth
+
     kwargs: dict[str, Any] = {"host": args.host, "port": args.port}
+
     if args.path is not None:
         kwargs["path"] = args.path
     mcp.run(transport=args.transport, **kwargs)
